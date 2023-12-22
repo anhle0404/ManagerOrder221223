@@ -1,0 +1,143 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="javascript:void(0);">Trang chủ</a>
+        </li>
+        <li class="breadcrumb-item active">Khách hàng</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header border-bottom p-2 sticky-top bg-white d-flex flex-wrap align-items-center">
+        <form action="javascript:GetAllCustomer();" method="get" class="card-header-form">
+            <div class="input-group input-group-merge">
+                <div class="form-floating form-floating-outline">
+                    <input type="text" class="form-control" id="keyword" placeholder="" oninput="return GetAllCustomer();">
+                    <label for="keyword">Từ khóa</label>
+                </div>
+                <button class="btn btn-primary"><i class="mdi mdi-magnify"></i></button>
+            </div>
+        </form>
+
+        <div class="card-header-action">
+            <button class="btn btn-primary btn-sm" onclick="return onAddCustomer();">
+                <span class="mdi mdi-plus">Thêm mới khách hàng</span>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-2">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr class="align-middle text-center sticky-top-table">
+                        <th class="sticky-left-table">Mã khách hàng</th>
+                        <th class="text-nowrap">Tên khách hàng</th>
+                        <th class="text-nowrap">Tên viết tắt</th>
+                        <th class="text-nowrap">Sđt</th>
+                        <th class="text-nowrap">Địa chỉ</th>
+                        <th class="sticky-right-table"></th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="list-card" style="display:none;">
+            @*<div class="card mb-3">
+                <div class="card-hearder border-bottom bg-light d-flex justify-content-between p-2">
+                    <h5 class="card-title text-uppercase p-0 m-0 " onclick="return false;">OrderCode</h5>
+                    <button class="btn btn-danger btn-sm p-2" onclick="return onDeleteCustomer(${item.Id},'${item.CustomerCode}');"><span class="mdi mdi-delete mdi-14px"></span></button>
+                </div>
+                <div class="card-body p-1">
+                    <p>Tên khách hàng: <span class="text-dark">ádijahsdkjajskd</span></p>
+                    <p>Tên viết tắt: <span class="text-dark">ádijahsdkjajskd</span></p>
+                    <p>Sđt: <a href="tel:0987654321">0987654321</a></p>
+                    <p>Địa chỉ: <span class="text-dark">ádijahsdkjajskd</span></p>
+                </div>
+            </div>*@
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-light p-2">
+                <h4 class="modal-title" id="modalCenterTitle">Thêm mới khách hàng</h4>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2">
+                <form action="/" method="post" id="frm_RegisterCustomer">
+                    <input type="hidden" id="RegisterCustomer_Id" class="form-control" value="0" disabled />
+                    <div class="row g-2">
+                        <div class="col-md-12 col-lg-4">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="text"
+                                       id="RegisterCustomer_CustomerCode"
+                                       class="form-control"
+                                       placeholder="" />
+                                <label for="RegisterCustomer_CustomerCode">Mã khách hàng<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-8">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="text"
+                                       id="RegisterCustomer_CustomerName"
+                                       class="form-control"
+                                       placeholder="" />
+                                <label for="RegisterCustomer_CustomerName">Tên khách hàng<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-12 col-lg-6">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="text"
+                                       id="RegisterCustomer_CustomerInitials"
+                                       class="form-control"
+                                       placeholder="" />
+                                <label for="RegisterCustomer_CustomerInitials">Tên viết tắt</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-6">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="tel"
+                                       id="RegisterCustomer_CustomerPhone"
+                                       class="form-control"
+                                       placeholder="" />
+                                <label for="RegisterCustomer_CustomerPhone">Số điện thoại<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 col-lg-12">
+                        <div class="form-floating form-floating-outline my-1">
+                            <input type="text"
+                                   id="RegisterCustomer_CustomerAddress"
+                                   class="form-control"
+                                   placeholder="" />
+                            <label for="RegisterCustomer_CustomerAddress">Địa chỉ<span class="text-danger">(*)</span></label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light p-1">
+                <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-success btn-sm" onclick="return SaveDataProduct();">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/register_customer.js" asp-append-version="true"></script>

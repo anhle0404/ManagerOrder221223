@@ -1,0 +1,10 @@
+Scaffold-DbContext "Data Source=D:\LeTheAnh\RTC\Project\2023\Database\managerorder.db" Microsoft.EntityFrameworkCore.Sqlite -OutputDir Entities -ContextDir Context -Force
+
+//Updatte 04/12/2023 20:46
+Scaffold-DbContext "Data Source=D:\MyProject\Database\ThangThuyData.db" Microsoft.EntityFrameworkCore.Sqlite -OutputDir Entities -ContextDir Context -Table Users,HistoryOrder,HistoryOrderDetail, RegisterCustomer -Force
+
+//Update 07/12/2023
+Scaffold-DbContext "Data Source=D:\MyProject\Database\ThangThuyData.db" Microsoft.EntityFrameworkCore.Sqlite -OutputDir Entities -ContextDir Context -Table Users,HistoryOrder,HistoryOrderDetail, RegisterCustomer, RegisterProduct -Force
+
+//Update 17/12/2023
+Scaffold-DbContext "Data Source=D:\MyProject\ManagerOrder151223\ManagerOrder.Models\Database\ThangThuyData.db" Microsoft.EntityFrameworkCore.Sqlite -OutputDir Entities -ContextDir Context -Table RegisterUsers,HistoryOrder,HistoryOrderDetail, RegisterCustomer, RegisterProduct,Unit -Force

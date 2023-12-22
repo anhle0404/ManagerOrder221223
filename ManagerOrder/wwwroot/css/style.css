@@ -1,0 +1,88 @@
+﻿@media (max-width: 767.98px) {
+    .table-responsive {
+        display: none;
+    }
+
+    .list-card {
+        display: block !important;
+    }
+
+    .card-hearder {
+        flex-wrap: wrap;
+    }
+
+    .card-header-action,
+    .card-header-form {
+        flex-grow: 0;
+        margin-top: 5px;
+        width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
+
+.card-hearder {
+    display: flex;
+    align-items: center;
+}
+
+.card-header-action{
+    margin-left: auto !important;
+}
+
+.form-control, 
+.form-select {
+    box-shadow: none !important;
+}
+
+
+.sticky-top-table {
+    position: sticky;
+    top: -1px;
+    background-color: #f3f3f4;
+    z-index: 1;
+}
+
+.sticky-right-table {
+    position: sticky;
+    right: 0px;
+    background-color: #f3f3f4;
+}
+
+.sticky-left-table {
+    position: sticky;
+    left: -1px;
+    background-color: #f3f3f4;
+}
+
+
+.table-responsive {
+    height: 75vh !important;
+    overflow: auto;
+}
+
+.list-card {
+    height: 75vh !important;
+    overflow: auto;
+}
+
+.table {
+    table-layout: auto !important
+}
+
+    .table td {
+        padding: 5px !important;
+    }
+
+    .table tbody tr:focus {
+        background-color: #ffd800 !important;
+    }
+
+.list-card .card .card-hearder .card-title {
+    cursor: pointer;
+}
+
+    .list-card .card .card-hearder .card-title:hover {
+        text-decoration: underline;
+    }

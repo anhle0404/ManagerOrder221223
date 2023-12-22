@@ -1,0 +1,3 @@
+﻿.table th:last-child{
+    z-index:-1 !important;
+}

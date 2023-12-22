@@ -1,0 +1,9 @@
+﻿
+
+.table td:nth-child(5) {
+    cursor: pointer;
+}
+
+    .table td:nth-child(5):hover {
+        text-decoration: underline;
+    }

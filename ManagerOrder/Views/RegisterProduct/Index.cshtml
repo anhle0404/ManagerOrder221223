@@ -1,0 +1,174 @@
+﻿
+@{ ViewData["Title"] = "Index"; }
+<link href="~/css/register_product.css" rel="stylesheet" />
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="javascript:void(0);">Trang chủ</a>
+        </li>
+        <li class="breadcrumb-item active">Sản phẩm</li>
+    </ol>
+</nav>
+
+<div class="card">
+    <div class="card-header border-bottom p-2 sticky-top bg-white d-flex flex-wrap align-items-center">
+        <form action="javascript:GetAllProduct();" method="get" class="card-header-form">
+            <div class="input-group input-group-merge">
+                <div class="form-floating form-floating-outline">
+                    <input type="text" class="form-control" id="keyword" placeholder="" oninput="return GetAllProduct();">
+                    <label for="keyword">Từ khóa</label>
+                </div>
+                <button class="btn btn-primary"><i class="mdi mdi-magnify"></i></button>
+            </div>
+        </form>
+
+        <div class="card-header-action">
+            <button class="btn btn-primary btn-sm" onclick="return onAddProduct();">
+                <span class="mdi mdi-plus">Thêm mới sản phẩm</span>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-2">
+        <div class="table-responsive text-nowrap">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                    <tr class="align-middle text-center sticky-top-table">
+
+                        <th class="sticky-left-table">Mã sản phẩm</th>
+                        <th>Tên sản phẩm</th>
+                        <th>Đơn vị</th>
+                        <th>SL trong kho</th>
+                        <th>SL Nhập</th>
+                        <th>SL Xuất</th>
+                        <th>Giá nhập</th>
+                        <th>Giá bán lẻ</th>
+                        <th class="sticky-right-table"></th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0">
+                    @*<tr>
+                        <td class="sticky-left-table">XXV1OG</td>
+                        <td>Xúc xích Veall10</td>
+                        <td>kg</td>
+                        <td class="text-end">1</td>
+                        <td class="text-end">1</td>
+                        <td class="text-end">1</td>
+                        <td class="text-end">1</td>
+                        <td class="text-end">1</td>
+                        <td class="sticky-right-table">
+                            <div class="btn-group" id="dropdown-icon-demo">
+                                <button type="button" class="btn btn-primary btn-sm dropdown-toggle waves-effect waves-light" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Tác vụ
+                                </button>
+                                <ul class="dropdown-menu" style="">
+                                    <li>
+                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center waves-effect" onclick="return onEditProduct(${item.Id});">
+                                            <i class="mdi mdi-pencil scaleX-n1-rtl text-info"></i>Sửa
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center waves-effect" onclick="return onDeleteProduct(${item.Id},'111')">
+                                            <i class="mdi mdi-delete scaleX-n1-rtl text-danger"></i>Xóa
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>*@
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="list-card" style="display:none;">
+            @*<div class="card mb-3">
+                    <div class="card-hearder border-bottom bg-light p-2">
+                        <h5 class="card-title text-uppercase p-0 m-0 " onclick="return false;">OrderCode</h5>
+                    </div>
+                    <div class="card-body p-1">
+                        3123123132
+                    </div>
+                    <div class="card-footer d-flex justify-content-between flex-wrap p-2">
+                        <small>Đơn vị: <span class="text-dark fw-bold">a</span></small>
+                        <small>Số lượng: <span class="text-dark fw-bold">1</span></small>
+                        <small>Giá bán: <span class="text-danger fw-bold">1 vnđ</span></small>
+                    </div>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCenter" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-light p-2">
+                <h4 class="modal-title" id="modalCenterTitle">Thêm mới sản phẩm</h4>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2">
+                <form action="/" method="post" id="frm_RegisterProduct">
+                    <input type="hidden" id="RegisterProduct_Id" class="form-control" value="0" disabled />
+                    <div class="row g-2">
+                        <div class="col-md-12 col-lg-4">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="text"
+                                       id="RegisterProduct_ProductCode"
+                                       class="form-control"
+                                       placeholder="" />
+                                <label for="RegisterProduct_ProductCode">Mã sản phẩm<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-8">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="text"
+                                       id="RegisterProduct_ProductName"
+                                       class="form-control"
+                                       placeholder="" />
+                                <label for="RegisterProduct_ProductName">Tên sản phẩm<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-12 col-lg-4">
+                            <div class="form-floating form-floating-outline my-1">
+                                <select class="form-select" id="RegisterProduct_Unit" asp-items="@ViewBag.Units">
+                                    <option selected="">--Chọn đơn vị</option>
+                                </select>
+                                <label for="RegisterProduct_Unit">Đơn vị<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-4">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="number"
+                                       id="RegisterProduct_ProductImportPrice"
+                                       class="form-control text-end"
+                                       placeholder="" oninput="return onInput(event);" />
+                                <label for="RegisterProduct_ProductImportPrice">Giá nhập<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-4">
+                            <div class="form-floating form-floating-outline my-1">
+                                <input type="number"
+                                       id="RegisterProduct_WholesalePrice"
+                                       class="form-control text-end"
+                                       placeholder="" oninput="return onInput(event);" />
+                                <label for="RegisterProduct_WholesalePrice">Giá bán chung<span class="text-danger">(*)</span></label>
+                            </div>
+                        </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light p-1">
+                <button type="button" class="btn btn-danger btn-sm" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <button type="button" class="btn btn-success btn-sm" onclick="return SaveDataProduct();">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/register_product.js" asp-append-version="true"></script>
