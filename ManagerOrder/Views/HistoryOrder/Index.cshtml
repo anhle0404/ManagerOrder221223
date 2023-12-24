@@ -15,37 +15,60 @@
 <section class="section">
     <div class="row">
         <div class="card m-0 p-0">
-            <div class="card-hearder border-bottom p-2 sticky-top bg-white">
-                <form action="javascript:GetAllOrder();" method="get" class="card-header-form">
-                    <div class="row m-0">
-                        <div class="col-md-12 col-lg-6 p-1">
-                            <div class="form-floating form-floating-outline">
-                                <select class="form-select" id="isapproved_history_order" onchange="return GetAllOrder();">
-                                    <option value="-1">--Tất cả--</option>
-                                    <option value="0" selected>Chưa giao</option>
-                                    <option value="1">Đã giao</option>
-                                </select>
-                                <label for="isapproved_history_order">Trạng thái</label>
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 col-lg-6 p-1">
-                            <div class="input-group input-group-merge">
-                                <div class="form-floating form-floating-outline">
-                                    <input type="text" id="keyword_history_order" class="form-control" placeholder="" oninput="return GetAllOrder();" />
-                                    <label for="keyword_history_order">Từ khóa</label>
+            <div class="card-hearder border-bottom p-2 sticky-top bg-white d-flex justify-content-between flex-nowrap align-items-start">
+                <div class="d-flex flex-wrap btn-group">
+                    <button class="btn btn-success btn-sm m-1" onclick="return onApproved(1);">Duyệt</button>
+                    <button class="btn btn-danger btn-sm m-1" onclick="return onApproved(0);">Hủy duyệt</button>
+                    <button class="btn btn-primary btn-sm m-1">Giao hàng</button>
+                    <button class="btn btn-warning btn-sm m-1 text-dark">Hủy giao hàng</button>
+                </div>
+                <div>
+                    <span class="mdi mdi-magnify" data-bs-toggle="modal" data-bs-target="#searchModal"></span>
+                    @*<form action="javascript:GetAllOrder();" method="get" class="card-header-form">
+                            <div class="row m-0">
+                                <div class="col-md-12 col-lg-3 p-1">
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="date" id="datestart_history_order" class="form-control" placeholder="" />
+                                        <label for="datestart_history_order">Từ ngày</label>
+                                    </div>
                                 </div>
-                                <button class="btn btn-primary"><i class="mdi mdi-magnify"></i></button>
+                                <div class="col-md-12 col-lg-3 p-1">
+                                    <div class="form-floating form-floating-outline">
+                                        <input type="date" id="dateend_history_order" class="form-control" placeholder="" />
+                                        <label for="dateend_history_order">Đến ngày</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-lg-3 p-1">
+                                    <div class="form-floating form-floating-outline">
+                                        <select class="form-select" id="isapproved_history_order" onchange="return GetAllOrder();">
+                                            <option value="-1">--Tất cả--</option>
+                                            <option value="0" selected>Chưa giao</option>
+                                            <option value="1">Đã giao</option>
+                                        </select>
+                                        <label for="isapproved_history_order">Trạng thái</label>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 col-lg-3 p-1">
+                                    <div class="input-group input-group-merge">
+                                        <div class="form-floating form-floating-outline">
+                                            <input type="text" id="keyword_history_order" class="form-control" placeholder="" oninput="return GetAllOrder();" />
+                                            <label for="keyword_history_order">Từ khóa</label>
+                                        </div>
+                                        <button class="btn btn-primary"><i class="mdi mdi-magnify"></i></button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </form>
+                        </form>*@
+                </div>
+
             </div>
             <div class="card-body p-2">
                 <div class="table-responsive text-nowrap">
                     <table class="table table-hover table-bordered align-middle">
                         <thead class="table-light">
                             <tr class="sticky-top-table text-center">
+                                <th class="text-nowrap"><input type="checkbox" id="selectall" onclick="return onSelecteAll(event);"/></th>
                                 <th class="text-nowrap">Stt</th>
                                 <th class="text-nowrap">Trạng thái</th>
                                 <th class="text-nowrap">Trạng thái giao hàng</th>
@@ -63,6 +86,7 @@
                         </thead>
                         <tbody class="tbody">
                             <tr tabindex="0">
+                                <td class="text-nowrap"><input type="checkbox" name="IsApproved" value="" checked/></td>
                                 <td class="text-nowrap">
                                     <a style="text-decoration:underline !important;" onclick="return GetOrderDetail();">Brandon Jacob</a>
                                 </td>
@@ -142,6 +166,56 @@
             <div class="modal-footer justify-content-between bg-light p-2">
                 <p class="text-dark">Tổng tiền: <span class="text-danger">100.000đ</span></p>
                 <button type="button" class="btn btn-primary btn-sm" onclick="return onClickDelivered(1, '');">Giao hàng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--Modal xem tìm kiếm đơn hàng-->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-light p-2">
+                <h5 class="text-dark fw-bold">tìm kiếm</h5>
+                <button type="button" class="btn-close text-danger" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-2">
+                <form action="javascript:GetAllOrder();" method="get" class="card-header-form">
+                    <div class="row m-0">
+                        <div class="col-md-12 col-lg-12 p-1">
+                            <div class="form-floating form-floating-outline">
+                                <input type="date" id="datestart_history_order" class="form-control" placeholder="" value="@DateTime.Now.ToString("yyyy-MM-dd")"/>
+                                <label for="datestart_history_order">Từ ngày</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-12 p-1">
+                            <div class="form-floating form-floating-outline">
+                                <input type="date" id="dateend_history_order" class="form-control" placeholder="" value="@DateTime.Now.ToString("yyyy-MM-dd")"/>
+                                <label for="dateend_history_order">Đến ngày</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12 col-lg-12 p-1">
+                            <div class="form-floating form-floating-outline">
+                                <select class="form-select" id="isapproved_history_order">
+                                    <option value="-1" selected>--Tất cả--</option>
+                                    <option value="0" >Chưa giao</option>
+                                    <option value="1">Đã giao</option>
+                                </select>
+                                <label for="isapproved_history_order">Trạng thái</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 col-lg-12 p-1">
+                            <div class="input-group input-group-merge">
+                                <div class="form-floating form-floating-outline">
+                                    <input type="text" id="keyword_history_order" class="form-control" placeholder=""/>
+                                    <label for="keyword_history_order">Từ khóa</label>
+                                </div>
+                                <button class="btn btn-primary"><i class="mdi mdi-magnify"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -9,6 +9,8 @@ function GetAllOrder() {
         type: 'GET',
         dataType: 'json',
         data: {
+            dateStart: $('#datestart_history_order').val(),
+            dateEnd: $('#dateend_history_order').val(),
             deliverystatus: parseInt($('#isapproved_history_order').val()),
             keyword: $('#keyword_history_order').val(),
         },
@@ -28,6 +30,7 @@ function GetAllOrder() {
                     var isFullPaymentText = item.IsFullPayment == 0 ? "Chờ thanh toán" : (item.IsFullPayment == 1 ? "Thanh toán 1 phần" : "Thanh toán toàn bộ");
 
                     html += `<tr tabindex="0">
+                            <td class="text-nowrap text-center"><input type="checkbox" name="IsApproved" value="${item.Id}" onclick="return onSelected(event);"/></td>
                             <td class="text-nowrap text-center">${key + 1}</td>
                             <td class="text-nowrap">${isApprovedText}</td>
                             <td class="text-nowrap">${deliveryStatusText}</td>
@@ -65,6 +68,8 @@ function GetAllOrder() {
 
                 $('.tbody').html(html);
                 $('.list-card').html(htmlCard);
+
+                $('#searchModal').modal('hide');
             }
         },
         error: function (err) {
@@ -162,5 +167,71 @@ function onClickDelivered(id, totalmoney, isApproved, deliveryStatus) {
                 }
             })
         }
+    }
+}
+
+
+//Sự kiện click chọn tất cả
+function onSelecteAll(event) {
+    var checked = $(event.target).is(':checked');
+    //console.log(checked);
+    $('input[name="IsApproved"]').each((i, el) => {
+        //console.log(el);
+        $(el).prop("checked", checked);
+
+        var checkedChild = $(el).is(':checked');
+        var trElement = $($(el).parent()).parent();
+        $(trElement).css("background-color", checkedChild ? "#ffb400" : "transparent");
+    })
+}
+
+//Sự kiện click chọn đơn hàng
+function onSelected(event) {
+    var checked = $(event.target).is(':checked');
+    var trElement = $($(event.target).parent()).parent();
+    $(trElement).css("background-color", checked ? "#ffb400" : "transparent");
+    if (!checked) {
+        $('#selectall').prop('checked', false);
+    }
+
+}
+
+//Sự kiện duyệt đơn hàng
+function onApproved(isAppove) {
+    var listSelected = $('input[name="IsApproved"]:checked');
+    //console.log(listSelected.length);
+    if (listSelected.length <= 0) {
+        alert(`Vui lòng chọn hóa đơn muốn ${isAppove == 1 ? "duyệt" : "hủy duyệt"}!`);
+    } else {
+        //console.log(listSelected);
+        var listOrder = $('input[name="IsApproved"]:checked').map(function () {
+            var obj = {
+                Id: parseInt(this.value),
+                IsApproved: isAppove
+            }
+            return obj;
+        }).get();
+
+        var ans = confirm(`Bạn có chắc muốn ${isAppove == 1 ? "duyệt" : "hủy duyệt"} đơn hàng đã chọn không?`);
+        if (ans) {
+            $.ajax({
+                url: '/HistoryOrder/Approved',
+                type: 'POST',
+                dataType: 'json',
+                data: JSON.stringify(listOrder),
+                contentType: 'application/json',
+                success: function (result) {
+                    if (parseInt(result) > 0) {
+                        GetAllOrder();
+                    } else {
+                        alert(result);
+                    }
+                },
+                error: function (err) {
+                    alert(err.responseText);
+                }
+            })
+        }
+        //console.log(listOrder);
     }
 }

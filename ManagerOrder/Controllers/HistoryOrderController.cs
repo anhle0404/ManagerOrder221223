@@ -32,7 +32,7 @@ namespace ManagerOrder.Controllers
             return View();
         }
 
-        public JsonResult GetAll(int deliverystatus, string keyword)
+        public JsonResult GetAll(DateTime dateStart, DateTime dateEnd, int deliverystatus, string keyword)
         {
             try
             {
@@ -42,12 +42,16 @@ namespace ManagerOrder.Controllers
                     return Json("Phiên đăng nhập đã hết.\nVui lòng đăng nhập lại!", new JsonSerializerOptions());
                 }
 
+                dateStart = new DateTime(dateStart.Year, dateStart.Month, dateStart.Day, 0, 0, 0);
+                dateEnd = new DateTime(dateEnd.Year, dateEnd.Month, dateEnd.Day, 23, 59, 59);
                 keyword = string.IsNullOrEmpty(keyword) ? "" : keyword;
+
                 var listOrder = (from order in orderRepo.GetAll()
                                  join customer in customerRepo.GetAll() on order.CustomerId equals customer.Id into t
                                  from customer in t.DefaultIfEmpty()
-                                 where (Convert.ToInt32(order.DeliveryStatus) == deliverystatus || deliverystatus == -1) &&
-                                       (order.OrderCode.ToLower().Contains(keyword.ToLower().Trim()) ||
+                                 where  (Convert.ToDateTime(order.CreatedDate) >= dateStart && Convert.ToDateTime(order.CreatedDate) <= dateEnd) &&
+                                        (Convert.ToInt32(order.DeliveryStatus) == deliverystatus || deliverystatus == -1) &&
+                                        (order.OrderCode.ToLower().Contains(keyword.ToLower().Trim()) ||
                                         customer.CustomerName.ToLower().Contains(keyword.ToLower().Trim()) ||
                                         customer.CustomerAddress.ToLower().Contains(keyword.ToLower().Trim()) ||
                                         keyword == "")
@@ -98,9 +102,9 @@ namespace ManagerOrder.Controllers
                 {
                     return Json($"Đơn hàng không tồn tại!", new JsonSerializerOptions());
                 }
-                else if (order.IsApproved == 0)
+                else if (order.IsApproved == 1)
                 {
-                    return Json($"Đơn hàng [{order.OrderCode}] chưa được duyệt.\nBạn không thể giao hàng!", new JsonSerializerOptions());
+                    return Json($"Đơn hàng [{order.OrderCode}] đã được duyệt.\nBạn không thể giao hàng!", new JsonSerializerOptions());
                 }
                 else if (order.DeliveryStatus == 1)
                 {
@@ -112,6 +116,47 @@ namespace ManagerOrder.Controllers
                 order.IsFullPayment = historyOrder.TienKhachTra <= 0 ? 0 : (historyOrder.TienKhachTra < order.TongTien ? 1 : 2);
 
                 return Json(orderRepo.Update(order), new JsonSerializerOptions());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult Approved([FromBody] List<HistoryOrder> historyOrders)
+        {
+            try
+            {
+                
+                var session = HttpContext.Session.GetObject<RegisterUser>("user");
+                if (session.Id <= 0)
+                {
+                    return Json("Phiên đăng nhập đã hết.\nVui lòng đăng nhập lại!", new JsonSerializerOptions());
+                }
+                else if (session.TypeId != 1)
+                {
+                    if (historyOrders.Count <= 0)
+                    {
+                        return Json("Vui lòng chọn đơn hàng!", new JsonSerializerOptions());
+                    }
+                    string message = historyOrders.FirstOrDefault().IsApproved == 1 ? "duyệt" : "hủy duyệt";
+                    return Json($"Bạn không thể {message} giao hàng!", new JsonSerializerOptions());
+                }
+
+                foreach (HistoryOrder item in historyOrders)
+                {
+                    HistoryOrder order = orderRepo.GetByID(item.Id);
+                    if (order == null)
+                    {
+                        return Json("Đơn hàng không tồn tại!", new JsonSerializerOptions());
+                    }
+
+                    order.IsApproved = item.IsApproved;
+                    orderRepo.Update(order);
+                }
+
+                return Json(1, new JsonSerializerOptions());
             }
             catch (Exception ex)
             {
