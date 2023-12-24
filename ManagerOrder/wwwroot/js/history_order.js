@@ -136,8 +136,8 @@ function GetOrderDetail(idOrder) {
 
 //Sự kiện click giao hàng
 function onClickDelivered(id, totalmoney, isApproved, deliveryStatus) {
-    if (isApproved == 0) {
-        alert('Đơn hàng chưa được duyệt.\nBạn không thể giao hàng!')
+    if (isApproved == 1) {
+        alert('Đơn hàng đã được duyệt.\nBạn không thể giao hàng!')
     } else if (deliveryStatus == 1) {
         alert('Đơn hàng đã được giao thành công.\nBạn không thể giao hàng!')
     } else {
@@ -223,6 +223,7 @@ function onApproved(isAppove) {
                 success: function (result) {
                     if (parseInt(result) > 0) {
                         GetAllOrder();
+                        $('#selectall').prop('checked', false);
                     } else {
                         alert(result);
                     }
@@ -234,4 +235,158 @@ function onApproved(isAppove) {
         }
         //console.log(listOrder);
     }
+}
+
+//Sự kiện xác nhận giao hàng
+function onDelivery(deliveryStatus) {
+    var listSelected = $('input[name="IsApproved"]:checked');
+    //console.log(listSelected.length);
+    if (listSelected.length <= 0) {
+        alert(`Vui lòng chọn hóa đơn muốn ${deliveryStatus == 1 ? "giao hàng" : "hủy giao hàng"}!`);
+    } else {
+        //console.log(listSelected);
+        var listOrder = $('input[name="IsApproved"]:checked').map(function () {
+            var obj = {
+                Id: parseInt(this.value),
+                DeliveryStatus: deliveryStatus
+            }
+            return obj;
+        }).get();
+
+        //console.log(listOrder);
+        $.ajax({
+            url: '/HistoryOrder/GetListDelivery',
+            type: 'POST',
+            dataType: 'json',
+            data: JSON.stringify(listOrder),
+            contentType: 'application/json',
+            success: function (result) {
+                //console.log(result);
+                var html = '';
+                $.each(result, (key, item) => {
+                    var htmlDetail = '';
+                    $.each(item.detail, (i, val) => {
+                        htmlDetail += `<div class="card border-top border-primary border-2 m-1 p-0">
+                                            <div class="card-body p-1">
+                                                <h5 class="card-title p-0 m-0">${val.ProductCode}</h5>
+                                                ${val.ProductName}
+                                            </div>
+                                            <div class="card-footer d-flex justify-content-between p-2 flex-wrap" style="flex-wrap:wrap;">
+                                                <small>Đơn giá: <span class="text-dark fw-bold">${val.Price} vnđ</span></small>
+                                                <small>Số lượng: <span class="text-dark fw-bold">${val.Quantity}</span></small>
+                                                <small>Thành tiền: <span class="text-dark fw-bold">${val.TotalPrice} vnđ</span></small>
+                                            </div>
+                                        </div>`;
+                    });
+
+                    html += `<div class="card">
+                                <div class="card-header border-bottom bg-light d-flex justify-content-between flex-nowrap p-2">
+                                    <h5 class="card-title text-uppercase p-0 m-0 fw-bold">${item.order.OrderCode}</h5>
+                                    <span class="mdi mdi-delete text-danger" style="cursor:pointer;" onclick="return onDeleteFromlist(event,'${item.order.OrderCode}');"></span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-sm-6 p-1">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="text" id="HistoryOrder_TongTien_${item.order.Id}" class="form-control" placeholder="" value="${new Intl.NumberFormat().format(item.order.TongTien)}" disabled />
+                                                <label for="dateend_history_order">Tổng tiền</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6 p-1">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="number" id="HistoryOrder_TienKhachTra_${item.order.Id}" class="form-control text-end" placeholder="" value="${deliveryStatus == 1 ? item.order.TongTien : item.order.TienKhachTra}" ${deliveryStatus == 1 ? "" :"disabled"}/>
+                                                <label for="dateend_history_order">Tiền khách trả</label>
+                                            </div>
+                                        </div>
+                                        <div class="accordion-item p-0" id="accordion_${item.order.Id}">
+                                            <h2 class="accordion-header text-body d-flex justify-content-between bg-info w-100 p-2">
+                                                <button type="button" class="accordion-button collapsed text-dark" data-bs-toggle="collapse" data-bs-target="#accordionIcon-${item.order.Id}" aria-controls="accordionIcon-${item.order.Id}" aria-expanded="false">
+                                                    Xem chi tiết
+                                                </button>
+                                            </h2>
+
+                                            <div id="accordionIcon-${item.order.Id}" class="accordion-collapse collapse" data-bs-parent="#accordion_${item.order.Id}" style="">
+                                                <div class="accordion-body">
+                                                    ${htmlDetail}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                });
+
+                var htmlFooter = '';
+                if (!deliveryStatus) {
+                    $('.delivery-title').text('Xác nhận hủy giao hàng');
+                    htmlFooter = `<button type="button" class="btn btn-warning btn-sm text-dark w-100" id="btnDelevery" onclick="return Delivery(${deliveryStatus});">Xác nhận hủy giao hàng</button>`;
+                } else {
+                    $('.delivery-title').text('Xác nhận giao hàng');
+                    htmlFooter = `<button type="button" class="btn btn-primary btn-sm w-100" id="btnDelevery" onclick="return Delivery(${deliveryStatus});">Xác nhận giao hàng</button>`;
+                }
+
+                $('#deliveryModal').modal('show');
+                $('#deliveryModal').find('.modal-footer').html(htmlFooter);
+                $('.list-group-delivery').html(html);
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        })
+
+        //var ans = confirm(`Bạn có chắc muốn ${deliveryStatus == 1 ? "giao hàng" : "hủy giao hàng"} đơn hàng đã chọn không?`);
+        //if (ans) {
+        //    
+        //}
+        //console.log(listOrder);
+    }
+}
+
+
+//Sự kiện click xóa đơn hàng
+function onDeleteFromlist(event, code) {
+    var ans = confirm(`Bạn có chắc muốn xóa đơn hàng [${code}] khỏi danh sách giao hàng không?`);
+    if (ans) {
+        var el = $($(event.target).parent()).parent();
+        console.log(el);
+        $(el).remove();
+    }
+}
+
+//Sự kiện xác nhận giao hàng
+function Delivery(deliveryStatus) {
+    var ans = confirm(`Bạn có chắc muốn ${deliveryStatus == 1 ? "giao hàng" : "hủy giao hàng"} danh sách đơn hàng không?`);
+    if (ans) {
+        var listOrder = $('[id^="HistoryOrder_TienKhachTra_"]').map(function () {
+            var idOrder = $(this).attr('id').substring($(this).attr('id').lastIndexOf('_') + 1);
+            var obj = {
+                Id: parseInt(idOrder),
+                DeliveryStatus: deliveryStatus,
+                TienKhachTra: parseFloat($(this).val())
+            };
+            return obj;
+        }).get();
+
+        //console.log(listOrder);
+        $.ajax({
+            url: '/HistoryOrder/Delivery',
+            type: 'POST',
+            dataType: 'json',
+            data: JSON.stringify(listOrder),
+            contentType: 'application/json',
+            success: function (result) {
+                if (parseInt(result) > 0) {
+                    GetAllOrder();
+                    $('#selectall').prop('checked', false);
+                    $('#deliveryModal').modal('hide');
+                } else {
+                    alert(result);
+                }
+            },
+            error: function (err) {
+                alert(err.responseText);
+            }
+        })
+    }
+
 }

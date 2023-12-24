@@ -15,7 +15,9 @@ namespace ManagerOrder.Controllers
     public class HistoryOrderController : Controller
     {
         HistoryOrderRepo orderRepo = new HistoryOrderRepo();
+        HistoryOrderDetailRepo detailRepo = new HistoryOrderDetailRepo();
         RegisterCustomerRepo customerRepo = new RegisterCustomerRepo();
+        RegisterProductRepo productRepo = new RegisterProductRepo();
         public IActionResult Index()
         {
             var session = HttpContext.Session.GetObject<RegisterUser>("user");
@@ -49,7 +51,7 @@ namespace ManagerOrder.Controllers
                 var listOrder = (from order in orderRepo.GetAll()
                                  join customer in customerRepo.GetAll() on order.CustomerId equals customer.Id into t
                                  from customer in t.DefaultIfEmpty()
-                                 where  (Convert.ToDateTime(order.CreatedDate) >= dateStart && Convert.ToDateTime(order.CreatedDate) <= dateEnd) &&
+                                 where (Convert.ToDateTime(order.CreatedDate) >= dateStart && Convert.ToDateTime(order.CreatedDate) <= dateEnd) &&
                                         (Convert.ToInt32(order.DeliveryStatus) == deliverystatus || deliverystatus == -1) &&
                                         (order.OrderCode.ToLower().Contains(keyword.ToLower().Trim()) ||
                                         customer.CustomerName.ToLower().Contains(keyword.ToLower().Trim()) ||
@@ -60,7 +62,7 @@ namespace ManagerOrder.Controllers
                                      order.Id,
                                      ShipperId = Convert.ToInt32(order.ShipperId),
                                      IsApproved = Convert.ToInt32(order.IsApproved),
-                                     DeliveryStatus = Convert.ToInt32(order.DeliveryStatus) ,
+                                     DeliveryStatus = Convert.ToInt32(order.DeliveryStatus),
                                      IsFullPayment = Convert.ToInt32(order.IsFullPayment),
                                      order.OrderCode,
                                      order.CustomerId,
@@ -128,7 +130,7 @@ namespace ManagerOrder.Controllers
         {
             try
             {
-                
+
                 var session = HttpContext.Session.GetObject<RegisterUser>("user");
                 if (session.Id <= 0)
                 {
@@ -157,6 +159,114 @@ namespace ManagerOrder.Controllers
                 }
 
                 return Json(1, new JsonSerializerOptions());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult Delivery([FromBody] List<HistoryOrder> historyOrders)
+        {
+            try
+            {
+                var session = HttpContext.Session.GetObject<RegisterUser>("user");
+                if (session.Id <= 0)
+                {
+                    return Json("Phiên đăng nhập đã hết.\nVui lòng đăng nhập lại!", new JsonSerializerOptions());
+                }
+                else if (session.TypeId == 2)
+                {
+                    string message = historyOrders.FirstOrDefault().DeliveryStatus == 1 ? "giao hàng" : "hủy giao hàng";
+                    return Json($"Bạn không thể {message}!", new JsonSerializerOptions());
+                }
+
+                if (historyOrders.Count <= 0)
+                {
+                    return Json("Vui lòng chọn đơn hàng!", new JsonSerializerOptions());
+                }
+
+                foreach (HistoryOrder item in historyOrders)
+                {
+                    HistoryOrder order = orderRepo.GetByID(item.Id);
+                    if (order == null)
+                    {
+                        return Json("Đơn hàng không tồn tại!", new JsonSerializerOptions());
+                    }
+
+                    order.DeliveryStatus = item.DeliveryStatus;
+                    order.TienKhachTra = item.DeliveryStatus == 1 ? item.TienKhachTra : 0;
+                    order.TienKhachNo = order.TongTien - order.TienKhachTra;
+                    order.IsFullPayment = order.TienKhachTra <= 0 ? 0 : (order.TienKhachTra < order.TongTien ? 1 : 2);
+                    orderRepo.Update(order);
+                }
+
+                return Json(1, new JsonSerializerOptions());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult GetListDelivery([FromBody] List<HistoryOrder> historyOrders)
+        {
+            try
+            {
+                var session = HttpContext.Session.GetObject<RegisterUser>("user");
+                if (session.Id <= 0)
+                {
+                    return Json("Phiên đăng nhập đã hết.\nVui lòng đăng nhập lại!", new JsonSerializerOptions());
+                }
+                else if (session.TypeId == 2)
+                {
+                    if (historyOrders.Count <= 0)
+                    {
+                        return Json("Vui lòng chọn đơn hàng!", new JsonSerializerOptions());
+                    }
+                    string message = historyOrders.FirstOrDefault().DeliveryStatus == 1 ? "giao hàng" : "hủy giao hàng";
+                    return Json($"Bạn không thể {message}!", new JsonSerializerOptions());
+                }
+
+                if (historyOrders.Count <= 0)
+                {
+                    return Json("Vui lòng chọn đơn hàng!", new JsonSerializerOptions());
+                }
+
+                List<object> listDelivery = new List<object>();
+                foreach (HistoryOrder item in historyOrders)
+                {
+                    HistoryOrder order = orderRepo.GetByID(item.Id);
+                    if (order == null)
+                    {
+                        continue;
+                    }
+                    var details = (from o in orderRepo.GetAll()
+                                      join d in detailRepo.GetAll() on o.Id equals d.HistoryOrderId into t
+                                      from d in t.DefaultIfEmpty()
+                                      join p in productRepo.GetAll() on d.ProductId equals p.Id into t1
+                                      from p in t1.DefaultIfEmpty()
+                                      where o.Id == item.Id
+                                      select new
+                                      {
+                                          ProductCode = p == null ? "" : p.ProductCode,
+                                          ProductName = p == null ? "" : p.ProductName,
+                                          Quantity = d.Qty,
+                                          Price = d == null ? 0 : d.GiaBanRieng,
+                                          TotalPrice = d.Qty * p.GiaBanChung
+                                      }).ToList();
+                    var delivery = new
+                    {
+                        order = order,
+                        detail = details
+                    };
+
+                    listDelivery.Add(delivery);
+                }
+
+                return Json(listDelivery, new JsonSerializerOptions());
             }
             catch (Exception ex)
             {

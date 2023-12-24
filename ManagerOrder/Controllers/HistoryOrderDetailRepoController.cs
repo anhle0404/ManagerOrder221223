@@ -58,8 +58,8 @@ namespace ManagerOrder.Controllers
                                       where o.Id == historyOrderId
                                       select new
                                       {
-                                          ProductCode = p == null ? "" : t1.First().ProductCode,
-                                          ProductName = p == null ? "" : t1.First().ProductName,
+                                          ProductCode = p == null ? "" : p.ProductCode,
+                                          ProductName = p == null ? "" : p.ProductName,
                                           Quantity = d.Qty,
                                           Price = d == null ? 0 : d.GiaBanRieng,
                                           TotalPrice = d.Qty * p.GiaBanChung
